@@ -89,3 +89,36 @@ exports.login = (req, res) => {
         .json({ general: 'Wrong credentials, please try again' });
     });
 };
+
+//Get user details
+exports.getUserDetails = (req, res) => {
+  let resData = {};
+  console.log(req.user.usernm);
+  db.doc(`/users/${req.user.username}`)
+    .get()
+    .then(doc => {
+      if (doc.exists) {
+        resData.credentials = doc.data();
+        return db
+          .collection('forms')
+          .where('userId', '==', req.user.id)
+          .get();
+      }
+      return res.status(500).json({ error: 'User does not exist' });
+    })
+    .then(data => {
+      resData.forms = [];
+      data.forEach(doc => {
+        resData.forms.push({
+          formId: doc.id,
+          inputs: doc.data().inputs,
+          created: doc.data().created
+        });
+      });
+      return res.json(resData);
+    })
+    .catch(err => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
