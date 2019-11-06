@@ -7,7 +7,9 @@ const {
   postForm,
   getUserForms,
   getAllForms,
-  deleteUserForm
+  deleteUserForm,
+  addResponse,
+  getFormResponses
 } = require('./handlers/forms');
 
 app.post('/signup', signup);
@@ -18,5 +20,7 @@ app.post('/forms', auth, postForm);
 app.get('/forms', auth, getUserForms);
 app.delete('/forms/:id', auth, deleteUserForm);
 app.get('/allForms', getAllForms);
+app.post('/forms/:id/responses', addResponse);
+app.get('/forms/:id/responses', getFormResponses);
 
 exports.api = functions.https.onRequest(app);

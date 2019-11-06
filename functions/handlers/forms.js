@@ -2,13 +2,13 @@ const { db } = require('../utils/admin');
 
 exports.postForm = async (req, res) => {
   const { inputs, options } = req.body;
-  if (!inputs.length) {
+  if (!inputs) {
     return res.status(400).json({ error: 'No questions in form' });
   }
 
   const newForm = {
-    inputs,
     userId: req.user.id,
+    inputs,
     created: new Date().toISOString()
   };
 
@@ -39,6 +39,7 @@ exports.getUserForms = async (req, res) => {
       response.push({
         formId: doc.id,
         inputs: doc.data().inputs,
+        options: doc.data().options,
         created: doc.data().created
       });
     });
@@ -69,15 +70,13 @@ exports.deleteUserForm = async (req, res) => {
 exports.getAllForms = async (req, res) => {
   try {
     const response = [];
-    const forms = await db
-      .collection('forms')
-      //   .orderBy('createdAt', 'desc')
-      .get();
+    const forms = await db.collection('forms').get();
 
     forms.forEach(doc => {
       response.push({
         formId: doc.id,
         inputs: doc.data().inputs,
+        options: doc.data().options,
         userId: doc.data().userId,
         created: doc.data().created
       });
@@ -85,6 +84,49 @@ exports.getAllForms = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ error: 'something went wrong: ' + error.message });
+    return res
+      .status(500)
+      .json({ error: 'something went wrong: ' + error.message });
+  }
+};
+
+exports.addResponse = async (req, res) => {
+  try {
+    const form = await db.doc(`forms/${req.params.id}`).get();
+
+    if (!form.exists) return res.status(404).json({ error: 'form not found' });
+
+    const newResponse = { formId: req.params.id, answer: req.body.answer };
+    const output = await db.collection('results').add(newResponse);
+    newResponse.id = output.id;
+    return res.status(201).json(newResponse);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'something went wrong: ' + error.message });
+  }
+};
+
+exports.getFormResponses = async (req, res) => {
+  try {
+    const output = [];
+    const responses = await db
+      .collection('results')
+      .where('formId', '==', req.params.id)
+      .get();
+
+    responses.forEach(doc => {
+      output.push({
+        responseId: doc.id,
+        formId: doc.data().formId,
+        answer: doc.data().answer
+      });
+    });
+
+    return res.status(200).json(output);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'something went wrong: ' + error.message });
   }
 };
