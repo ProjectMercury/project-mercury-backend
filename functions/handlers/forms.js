@@ -90,13 +90,35 @@ exports.getAllForms = async (req, res) => {
   }
 };
 
+exports.getFormById = async (req, res) => {
+  try {
+    const formDocument = db.doc(`/forms/${req.params.id}`);
+
+    const form = await formDocument.get();
+    if (!form.exists) return res.status(404).json({ error: 'form not found' });
+
+    const response = {};
+    response.formId = form.id;
+    response.inputs = form.data().inputs;
+    response.options = form.data().options;
+    response.userId = form.data().userId;
+    response.created = form.data().created;
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'something went wrong: ' + error.message });
+  }
+};
+
 exports.addResponse = async (req, res) => {
   try {
     const form = await db.doc(`forms/${req.params.id}`).get();
 
     if (!form.exists) return res.status(404).json({ error: 'form not found' });
 
-    const newResponse = { formId: req.params.id, answer: req.body.answer };
+    const newResponse = { formId: req.params.id, answer: req.body.responses };
     const output = await db.collection('results').add(newResponse);
     newResponse.id = output.id;
     return res.status(201).json(newResponse);
