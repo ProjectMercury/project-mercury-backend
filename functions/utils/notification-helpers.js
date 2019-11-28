@@ -4,7 +4,7 @@ const getFormName = async formId => {
   try {
     const formName = await db
       .collection("forms")
-      .where("id", "=", formId)
+      .where("id", "==", formId)
       .select("title")
       .get();
     const name =
