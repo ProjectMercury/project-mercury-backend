@@ -15,7 +15,11 @@ const {
   getFormById
 } = require("./handlers/forms");
 
-const { createNotification } = require("./handlers/notifications");
+const {
+  createNotification,
+  deleteNotification,
+  fetchUserNotifications
+} = require("./handlers/notifications");
 
 app.post("/signup", signup);
 app.post("/login", login);
@@ -30,6 +34,7 @@ app.post("/forms/:id/responses", addResponse);
 app.get("/forms/:id/responses", getFormResponses);
 
 app.post("/forms/:id/notifications", createNotification);
-app.delete("./forms/notifications/:id", deleteNotification)
+app.get("/notifications", auth, fetchUserNotifications);
+app.delete("/notifications/:id", auth, deleteNotification);
 
 exports.api = functions.https.onRequest(app);
