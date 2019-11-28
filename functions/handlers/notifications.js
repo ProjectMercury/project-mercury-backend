@@ -11,7 +11,7 @@ exports.createNotification = async (req, res) => {
     if (!form.exists) return res.status(404).json({ error: "Form not found" });
 
     const { userId } = form;
-    
+
     const notification = {
       isRead: false,
       created: firebase.firestore.Timestamp.fromDate(new Date()),
@@ -35,7 +35,7 @@ exports.createNotification = async (req, res) => {
 //and firestore has no native marge functionality for collections
 exports.fetchUserNotifications = async (req, res) => {
   try {
-    const data = [];
+    let data = [];
     const userNotifications = await db
       .collection("notifications")
       .orderBy("created", "desc")
