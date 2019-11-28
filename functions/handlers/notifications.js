@@ -3,22 +3,27 @@ const getFormName = require("../utils/notification-helpers");
 
 //Create a new notification - this happens whenever a respondent submits a response
 exports.createNotification = async (req, res) => {
-  const { notification } = req.body;
   const { id } = req.params;
-  
+
   try {
     const form = await db.doc(`forms/${id}`).get();
 
     if (!form.exists) return res.status(404).json({ error: "Form not found" });
 
     const { userId } = form;
-    const notificationBody = { ...notification, formId: id, userId };
+    
+    const notification = {
+      isRead: false,
+      created: firebase.firestore.Timestamp.fromDate(new Date()),
+      formId: id,
+      userId
+    };
 
-    const result = await db.collection("notifications").add(notificationBody);
+    const result = await db.collection("notifications").add(notification);
 
-    notificationBody.id = result.id;
+    notification.id = result.id;
 
-    return res.status(201).json(notificationBody);
+    return res.status(201).json(notification);
   } catch (error) {
     res
       .status(500)
