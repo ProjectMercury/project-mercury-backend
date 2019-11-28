@@ -1,45 +1,30 @@
-const firebase = require("firebase");
 const { db } = require("../utils/admin");
 const getFormName = require("../utils/notification-helpers");
 
-exports.postForm = async (req, res) => {
-  const { inputs, options } = req.body;
-  if (!inputs) {
-    return res.status(400).json({ error: "No questions in form" });
-  }
-
-  const newForm = {
-    userId: req.user.id,
-    inputs,
-    created: new Date().toISOString()
-  };
-
-  if (options) newForm.options = options;
-
-  try {
-    const inputResult = await db.collection("forms").add(newForm);
-    const output = newForm;
-
-    output.formId = inputResult.id;
-    return res.status(201).json(output);
-  } catch (error) {
-    res.status(500).json({ error: "something went wrong: " + error.message });
-  }
-};
-
+//Create a new notification - this happens whenever a respondent submits a response
 exports.createNotification = async (req, res) => {
   const { notification } = req.body;
+  const { id } = req.params;
+  
   try {
-    const result = await db.collection("notifications").add(notification);
+    const form = await db.doc(`forms/${id}`).get();
 
-    //id, formId, isRead, createdAt, creatorId
+    if (!form.exists) return res.status(404).json({ error: "Form not found" });
+
+    const { userId } = form;
+    const notificationBody = { ...notification, formId: id, userId };
+
+    const result = await db.collection("notifications").add(notificationBody);
+
+    notificationBody.id = result.id;
+
+    return res.status(201).json(notificationBody);
   } catch (error) {
     res
       .status(500)
       .json({ error: `Oops, something went wrong, buddy: ${error.message}` });
   }
 };
-
 
 //the getFormName function simply fetches the name of the form that the notification belongs to so that it can be displayed on the client side
 //and firestore has no native marge functionality for collections
