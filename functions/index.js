@@ -30,5 +30,6 @@ app.post("/forms/:id/responses", addResponse);
 app.get("/forms/:id/responses", getFormResponses);
 
 app.post("/forms/:id/notifications", createNotification);
+app.delete("./forms/notifications/:id", deleteNotification)
 
 exports.api = functions.https.onRequest(app);

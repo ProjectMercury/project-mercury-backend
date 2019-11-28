@@ -41,7 +41,8 @@ exports.createNotification = async (req, res) => {
 };
 
 
-
+//the getFormName function simply fetches the name of the form that the notification belongs to so that it can be displayed on the client side
+//and firestore has no native marge functionality for collections
 exports.fetchUserNotifications = async (req, res) => {
   try {
     const data = [];
@@ -67,6 +68,25 @@ exports.fetchUserNotifications = async (req, res) => {
   }
 };
 
-exports.updateNotificationsAsRead = async (req, res) => {
-  
-}
+//I considered updating the isRead field to true as oppoosed to deleting the notification when a user clicks on it,
+//but what's the point if the user is never going to go back to an unread state and why not just free up a slot anyway
+
+exports.deleteNotification = async (req, res) => {
+  try {
+    const notification = await db.doc(`/notifications/${req.params.id}`).get();
+
+    if (!notification.exists)
+      return res.status(404).json({ error: "notification not found" });
+
+    if (notification.data().userId !== req.user.id)
+      return res.status(403).json({ error: "unauthorized" });
+
+    await db.doc(`/notifications/${req.params.id}`).delete();
+
+    return res.status(200).json({ message: "notification deleted" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: `Oops, something went wrong, buddy: ${error.message}` });
+  }
+};
