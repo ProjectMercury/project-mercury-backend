@@ -1,5 +1,6 @@
 const firebase = require("firebase");
 const { db } = require("../utils/admin");
+const getFormName = require("../utils/notification-helpers");
 
 exports.postForm = async (req, res) => {
   const { inputs, options } = req.body;
@@ -39,21 +40,23 @@ exports.createNotification = async (req, res) => {
   }
 };
 
+
+
 exports.fetchUserNotifications = async (req, res) => {
   try {
     const data = [];
     const userNotifications = await db
       .collection("notifications")
       .orderBy("created", "desc")
-      .where({ userId: req.user.id })
+      .where("userId", "==", req.user.id)
       .get();
 
     userNotifications.forEach(async notification => {
       data.push({
-          id = notification.id,
-          isRead: doc.data().isRead,
-          created: doc.data().created,
-          form_name: await getFormName(notification.data(),userId)
+        id: notification.id,
+        isRead: notification.data().isRead,
+        created: notification.data().created,
+        form_name: await getFormName(notification.data().formId)
       });
     });
     return res.status(200).json(data);
@@ -63,3 +66,7 @@ exports.fetchUserNotifications = async (req, res) => {
       .json({ error: `Oops, something went wrong, buddy: ${error.message}` });
   }
 };
+
+exports.updateNotificationsAsRead = async (req, res) => {
+  
+}
