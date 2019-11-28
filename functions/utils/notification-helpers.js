@@ -7,17 +7,16 @@ const getFormName = async formId => {
       .where("id", "=", formId)
       .select("title")
       .get();
-    return { formName };
+    const name =
+      typeof formName === "object" &&
+      !Array.isArray(formName) &&
+      formName !== null
+        ? { title }
+        : formName;
+    return name;
   } catch (error) {
     console.log(error.message);
   }
 };
 
-const getFormOwner = async formId => {
-  
-}
-
-
-
-
-module.exports = getFormName
+module.exports = getFormName;
