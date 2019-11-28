@@ -11,16 +11,13 @@ exports.createNotification = async (req, res) => {
     if (!form.exists) return res.status(404).json({ error: "Form not found" });
 
     const { userId } = form;
-
     const notification = {
       isRead: false,
       created: firebase.firestore.Timestamp.fromDate(new Date()),
       formId: id,
       userId
     };
-
     const result = await db.collection("notifications").add(notification);
-
     notification.id = result.id;
 
     return res.status(201).json(notification);
