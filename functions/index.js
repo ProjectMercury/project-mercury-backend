@@ -22,6 +22,10 @@ const {
   fetchUserNotifications
 } = require("./handlers/notifications");
 
+
+app.post("/signup", signup);
+app.post("/login", login);
+
 app.get('/users', auth, getUserDetails);
 app.post('/forms', auth, postForm);
 app.get('/forms', auth, getUserForms);
