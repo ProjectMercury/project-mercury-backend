@@ -13,7 +13,7 @@ exports.createNotification = async (req, res) => {
     const { userId } = form;
     const notification = {
       isRead: false,
-      created: firebase.firestore.Timestamp.fromDate(new Date()),
+      created: new Date().toISOString(),
       formId: id,
       userId
     };
