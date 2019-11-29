@@ -32,15 +32,6 @@ app.post('/forms/:id/responses', addResponse);
 app.get('/forms/:id/responses', getFormResponses);
 app.get('/forms/responses/count', auth, getTotalResponses);
 
-app.get("/users", auth, getUserDetails);
-app.post("/forms", auth, postForm);
-app.get("/forms", auth, getUserForms);
-app.get("/forms/:id", getFormById);
-app.delete("/forms/:id", auth, deleteUserForm);
-app.get("/allForms", getAllForms);
-app.post("/forms/:id/responses", addResponse);
-app.get("/forms/:id/responses", getFormResponses);
-
 app.post("/forms/:id/notifications", createNotification);
 app.get("/notifications", auth, fetchUserNotifications);
 app.delete("/notifications/:id", auth, deleteNotification);

@@ -6,9 +6,9 @@ exports.createNotification = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const form = db.doc(`forms/${id}`).get();
+    const form = await db.doc(`forms/${id}`).get();
 
-    if (form.exists) return res.status(404).json({ error: "Form not found" });
+    if (!form.exists) return res.status(404).json({ error: "Form not found" });
 
     const userId = form.data().userId;
     const notification = {
@@ -35,7 +35,6 @@ exports.fetchUserNotifications = async (req, res) => {
     let data = [];
     const userNotifications = await db
       .collection("notifications")
-      .orderBy("created", "desc")
       .where("userId", "==", req.user.id)
       .get();
 
