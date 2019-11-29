@@ -14,30 +14,31 @@ const {
   getFormResponses,
   getFormById,
   getTotalResponses
-} = require('./handlers/forms');
+} = require("./handlers/forms");
 
 const {
   createNotification,
   deleteNotification,
-  fetchUserNotifications
+  fetchUserNotifications,
+  getNotificationCount
 } = require("./handlers/notifications");
-
 
 app.post("/signup", signup);
 app.post("/login", login);
 
-app.get('/users', auth, getUserDetails);
-app.post('/forms', auth, postForm);
-app.get('/forms', auth, getUserForms);
-app.get('/forms/:id', getFormById);
-app.delete('/forms/:id', auth, deleteUserForm);
-app.get('/allForms', getAllForms);
-app.post('/forms/:id/responses', addResponse);
-app.get('/forms/:id/responses', getFormResponses);
-app.get('/forms/responses/count', auth, getTotalResponses);
+app.get("/users", auth, getUserDetails);
+app.post("/forms", auth, postForm);
+app.get("/forms", auth, getUserForms);
+app.get("/forms/:id", getFormById);
+app.delete("/forms/:id", auth, deleteUserForm);
+app.get("/allForms", getAllForms);
+app.post("/forms/:id/responses", addResponse);
+app.get("/forms/:id/responses", getFormResponses);
+app.get("/forms/responses/count", auth, getTotalResponses);
 
 app.post("/forms/:id/notifications", createNotification);
 app.get("/notifications", auth, fetchUserNotifications);
 app.delete("/notifications/:id", auth, deleteNotification);
+app.get("/notifications/count", auth, getNotificationCount);
 
 exports.api = functions.https.onRequest(app);
