@@ -10,12 +10,12 @@ exports.createNotification = async (req, res) => {
 
     if (!form.exists) return res.status(404).json({ error: "Form not found" });
 
-    const { userId } = form;
+    const userId = form.userId;
     const notification = {
       isRead: false,
       created: new Date().toISOString(),
       formId: id,
-      userId
+      userId: userId
     };
     const result = await db.collection("notifications").add(notification);
     notification.id = result.id;
