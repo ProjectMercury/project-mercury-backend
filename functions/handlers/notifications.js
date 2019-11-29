@@ -6,9 +6,10 @@ exports.createNotification = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const form = await db.doc(`forms/${id}`).get();
+    const formDocument = db.doc(`forms/${id}`).get();
+    const form = await formDocument.get();
 
-    if (!form.exists) return res.status(404).json({ error: "Form not found" });
+    if (form.exists) return res.status(404).json({ error: "Form not found" });
 
     const userId = form.userId;
     const notification = {
