@@ -37,7 +37,7 @@ exports.signup = (req, res) => {
     })
     .then(data => {
       userId = data.user.uid;
-      return data.user.getIdToken();
+      return data.user.getIdToken(true);
     })
     .then(token => {
       tokenItem = token;
@@ -69,6 +69,7 @@ exports.login = (req, res) => {
     email: req.body.email,
     password: req.body.password
   };
+  let refreshToken;
 
   const { valid, errors } = validateLoginData(user);
   if (!valid) return res.status(400).json(errors);
@@ -77,10 +78,11 @@ exports.login = (req, res) => {
     .auth()
     .signInWithEmailAndPassword(user.email, user.password)
     .then(data => {
+      refreshToken = data.user.refreshToken;
       return data.user.getIdToken();
     })
     .then(token => {
-      return res.json({ token });
+      return res.json({ token, refreshToken });
     })
     .catch(err => {
       console.error(err);
@@ -112,7 +114,9 @@ exports.getUserDetails = (req, res) => {
         resData.forms.push({
           formId: doc.id,
           inputs: doc.data().inputs,
-          created: doc.data().created
+          created: doc.data().created,
+          title: doc.data().title,
+          description: doc.data().description
         });
       });
       return res.json(resData);

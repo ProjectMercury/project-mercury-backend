@@ -12,7 +12,8 @@ const {
   deleteUserForm,
   addResponse,
   getFormResponses,
-  getFormById
+  getFormById,
+  getTotalResponses
 } = require('./handlers/forms');
 
 app.post('/signup', signup);
@@ -26,5 +27,6 @@ app.delete('/forms/:id', auth, deleteUserForm);
 app.get('/allForms', getAllForms);
 app.post('/forms/:id/responses', addResponse);
 app.get('/forms/:id/responses', getFormResponses);
+app.get('/forms/responses/count', auth, getTotalResponses);
 
 exports.api = functions.https.onRequest(app);

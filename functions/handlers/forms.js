@@ -1,7 +1,7 @@
 const { db } = require('../utils/admin');
 
 exports.postForm = async (req, res) => {
-  const { inputs, options } = req.body;
+  const { inputs, options, title, description } = req.body;
   if (!inputs) {
     return res.status(400).json({ error: 'No questions in form' });
   }
@@ -9,7 +9,9 @@ exports.postForm = async (req, res) => {
   const newForm = {
     userId: req.user.id,
     inputs,
-    created: new Date().toISOString()
+    created: new Date().toISOString(),
+    title,
+    description
   };
 
   if (options) newForm.options = options;
@@ -28,10 +30,8 @@ exports.postForm = async (req, res) => {
 exports.getUserForms = async (req, res) => {
   try {
     const response = [];
-    console.log(req.user.id);
     const forms = await db
       .collection('forms')
-      //   .orderBy('createdAt', 'desc')
       .where('userId', '==', req.user.id)
       .get();
 
@@ -40,7 +40,10 @@ exports.getUserForms = async (req, res) => {
         formId: doc.id,
         inputs: doc.data().inputs,
         options: doc.data().options,
-        created: doc.data().created
+        created: doc.data().created,
+        title: doc.data().title,
+        description: doc.data().description,
+        responses: []
       });
     });
 
@@ -78,7 +81,9 @@ exports.getAllForms = async (req, res) => {
         inputs: doc.data().inputs,
         options: doc.data().options,
         userId: doc.data().userId,
-        created: doc.data().created
+        created: doc.data().created,
+        title: doc.data().title,
+        description: doc.data().description
       });
     });
 
@@ -103,6 +108,8 @@ exports.getFormById = async (req, res) => {
     response.options = form.data().options;
     response.userId = form.data().userId;
     response.created = form.data().created;
+    response.title = form.data().title;
+    response.description = form.data().description;
 
     return res.status(200).json(response);
   } catch (error) {
@@ -118,7 +125,12 @@ exports.addResponse = async (req, res) => {
 
     if (!form.exists) return res.status(404).json({ error: 'form not found' });
 
-    const newResponse = { formId: req.params.id, answer: req.body.responses };
+    const newResponse = {
+      formId: req.params.id,
+      answer: req.body.responses,
+      userId: form.data().userId,
+      createdAt: new Date().toISOString()
+    };
     const output = await db.collection('results').add(newResponse);
     newResponse.id = output.id;
     return res.status(201).json(newResponse);
@@ -141,10 +153,36 @@ exports.getFormResponses = async (req, res) => {
       output.push({
         responseId: doc.id,
         formId: doc.data().formId,
-        answer: doc.data().answer
+        answer: doc.data().answer,
+        createdAt: doc.data().createdAt
       });
     });
 
+    return res.status(200).json(output);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'something went wrong: ' + error.message });
+  }
+};
+
+exports.getTotalResponses = async (req, res) => {
+  try {
+    const output = [];
+    const responses = await db
+      .collection('results')
+      .where('userId', '==', req.user.id)
+      .get();
+
+    responses.forEach(doc => {
+      output.push({
+        id: doc.id,
+        formId: doc.data().formId,
+        answer: doc.data().answer,
+        createdAt: doc.data().createdAt
+      });
+    });
+    console.log(responses);
     return res.status(200).json(output);
   } catch (error) {
     return res
