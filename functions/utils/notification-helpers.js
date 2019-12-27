@@ -17,5 +17,3 @@ const getFormName = async formId => {
     console.log(error.message);
   }
 };
-
-module.exports = { getFormName, asyncForEach };

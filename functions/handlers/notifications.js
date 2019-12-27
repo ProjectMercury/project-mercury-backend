@@ -78,32 +78,30 @@ exports.fetchUserNotifications = async (req, res) => {
   }
 };
 
-//I considered updating the isRead field to true as oppoosed to deleting the notification when a user clicks on it,
+//Considered updating the isRead field to true as oppoosed to deleting the notification when a user clicks on it,
 //but what's the point if the user is never going to go back to an unread state and why not just free up a slot anyway
 
-exports.deleteNotification = async (req, res) => {
-  try {
-    const notification = await db.doc(`/notifications/${req.params.id}`).get();
+exports.deleteNotification = (req, res) => {
+  db.collection("notifications")
+    .where("formId", "==", req.params.id)
+    .get()
+    .then(querySnapshot => {
+      const batch = db.batch();
 
-    if (!notification.exists)
-      return res.status(404).json({ error: "notification not found" });
-
-    if (notification.data().userId !== req.user.id)
-      return res.status(403).json({ error: "unauthorized" });
-
-    await db.doc(`/notifications/${req.params.id}`).delete();
-
-    return res.status(200).json({ message: "notification deleted" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: `Oops, something went wrong, buddy: ${error.message}` });
-  }
+      querySnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      return batch.commit();
+    })
+    .then(() => {
+      return res.status(201).json({ message: "deleted" });
+    })
+    .catch(error => res.status(500).json({ error: error.message }));
 };
 
 exports.getNotificationCount = async (req, res) => {
   const groupNotificationsByForm = array => {
-  const grouped = [];
+    const grouped = [];
     new Map(
       [...new Set(array)].map(x => [
         x.form_title,
@@ -113,7 +111,7 @@ exports.getNotificationCount = async (req, res) => {
       grouped.push({
         form_title: key,
         notification_count: value,
-        formId: array.find(form => form.form_title === key).id
+        formId: array.find(form => form.form_title === key).formId
       });
     });
     return grouped;
